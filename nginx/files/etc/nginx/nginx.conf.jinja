@@ -1,0 +1,89 @@
+{% set nginx = pillar.get('nginx', {}) -%}
+{% set user = nginx.get('user', 'nginx') -%}
+user  {{user}};
+{% set worker_processes = grains['num_cpus']*2  -%}
+worker_processes  {{worker_processes}};
+{% set error_log = nginx.get('error_log', '/var/log/nginx/error.log') -%}
+error_log {{error_log}};
+pid /var/run/nginx.pid;
+worker_rlimit_nofile 65530;
+
+events {
+    use {{nginx.get('events', {}).get('use', 'epoll')}};
+    multi_accept on; 
+    worker_connections  {{nginx.get('events', {}).get('worker_connections', '1024')}};
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    server_tokens off;
+
+    log_format  access  '$remote_addr - $remote_user [$time_local] "$request" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" "$http_x_forwarded_for" "$request_time" "$connection" "-" "$host"' '"$request_body"' ;
+    log_format elk '$remote_addr||$remote_user||$time_local||$request||$status||$body_bytes_sent||$http_referer||$http_user_agent||$http_x_forwarded_for||$request_time||$connection||$host||$request_body'; 
+
+    server_names_hash_bucket_size {{ nginx.get('server_names_hash_bucket_size', '128') }};
+    client_header_buffer_size {{ nginx.get('client_header_buffer_size', '512k') }};
+    large_client_header_buffers {{ nginx.get('large_client_header_buffers','4 1024k') }};
+    client_max_body_size {{ nginx.get('client_max_body_size', '200m') }};
+
+    {% if nginx.fastcgi.enabled -%}
+    fastcgi_connect_timeout {{ nginx.get('fastcgi').get('fastcgi_connect_timeout', '1800') }};
+    fastcgi_send_timeout {{ nginx.get('fastcgi').get('fastcgi_send_timeout','1800') }};
+    fastcgi_read_timeout {{ nginx.get('fastcgi').get('fastcgi_read_timeout','1800') }};
+    fastcgi_buffer_size {{ nginx.get('fastcgi').get('fastcgi_buffer_size','16k') }};
+    fastcgi_buffers {{ nginx.get('fastcgi').get('fastcgi_buffers','256 16k') }};
+    fastcgi_busy_buffers_size {{ nginx.get('fastcgi').get('fastcgi_busy_buffers_size','1024k') }};
+    fastcgi_temp_file_write_size {{ nginx.get('fastcgi').get('fastcgi_temp_file_write_size','2048k') }};
+    fastcgi_keep_conn {{ nginx.get('fastcgi').get('fastcgi_keep_conn','on') }};
+    {% endif -%}
+
+    {% if nginx.proxy.enabled %}
+    proxy_connect_timeout {{ nginx.get('proxy').get('proxy_connect_timeout','300') }};
+    proxy_read_timeout {{ nginx.get('proxy').get('proxy_read_timeout','300') }};
+    proxy_send_timeout {{ nginx.get('proxy').get('proxy_send_timeout','300') }};
+    proxy_buffer_size {{ nginx.get('proxy').get('proxy_buffer_size','16k') }};
+    proxy_buffers {{ nginx.get('proxy').get('proxy_buffers','4 64k') }};
+    proxy_busy_buffers_size {{ nginx.get('proxy').get('proxy_busy_buffers_size','128k') }};
+    proxy_temp_file_write_size {{ nginx.get('proxy').get('proxy_temp_file_write_size','128k') }};
+    {% endif -%}
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+
+    keepalive_timeout 65;
+
+    {% if nginx.gzip.enabled -%}
+    gzip {{nginx.get('gzip').get('gzip','off')}};
+    gzip_http_version {{nginx.get('gzip').get('gzip_http_version','1.1')}};
+    gzip_vary {{nginx.get('gzip').get('gzip_vary','off')}};
+    gzip_comp_level {{nginx.get('gzip').get('gzip_comp_level','1')}};
+    gzip_types {{nginx.get('gzip').get('gzip_types','text/html')}};
+    gzip_buffers {{nginx.get('gzip').get('gzip_buffers','16 8k')}};
+    gzip_min_length {{nginx.get('gzip').get('gzip_min_length','20')}};
+    gzip_disable "{{nginx.get('gzip').get('gzip_disable','MSIE [4-6]\.')}}";
+    {% endif %}
+
+    set_real_ip_from   0.0.0.0/0;
+    real_ip_header     X-Forwarded-For;
+    
+    server {
+        listen 2188;
+        server_name 127.0.0.1;
+        location /nginx_status {
+            stub_status on;
+            access_log off;
+            allow 127.0.0.1;
+            deny all;
+        }
+    }
+    server {
+        listen       80 default_server;
+        server_name  _;
+        access_log      off;
+        return 502;
+    }
+    include /etc/nginx/sites/*.conf;
+}

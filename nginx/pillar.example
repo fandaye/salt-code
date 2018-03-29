@@ -1,0 +1,96 @@
+nginx:
+  name: nginx
+  install:
+    enabled: True
+  files:
+    /etc/nginx/nginx.conf:
+      source: "salt://nginx/files/etc/nginx/nginx.conf.jinja"
+      options:
+        - template: jinja
+        - user: root
+        - group: root
+        - mode: 644
+        - backup: minion
+    /etc/logrotate.d/nginx:
+      source: "salt://nginx/files/etc/logrotate.d/nginx"
+      options:
+        - template: jinja
+        - user: root
+        - group: root
+        - mode: 644
+        - backup: minion
+    /etc/nginx/fastcgi.conf:
+      source: "salt://nginx/files/etc/nginx/fastcgi.conf"
+      options:
+        - template: jinja
+        - user: root
+        - group: root
+        - mode: 644
+        - backup: minion
+  dirs:
+    /data/logs/nginx:
+      options:
+        - makedirs: True
+        - dir_mode: 777
+        - user: root
+        - group: root
+    /etc/nginx/sites:
+      options:
+        - makedirs: True
+        - group: root
+        - user: root
+        - dir_mode: 755
+  code_dir: /data/web
+  nginx_servers:
+    - a.com
+
+  access_log_dir: /data/logs/nginx
+
+  running:
+    enabled: True
+    options:
+      - name: nginx
+      - enable: True
+      - reload: True
+
+############   nginx.conf 配置部分  ###############
+
+  user: nginx
+  error_log: /data/logs/nginx/error.log
+  events:
+    use: epoll
+    worker_connections: 1024
+  server_names_hash_bucket_size: 128
+  client_header_buffer_size: 512k
+  large_client_header_buffers: '4 1024k'
+  client_max_body_size: 200m                 #客户端最大上传文件大小
+  fastcgi:
+    enabled: True
+    fastcgi_connect_timeout: 1800             #指定连接到后端FastCGI 的超时时间
+    fastcgi_send_timeout: 1800                #向FastCGI 传送请求的超时时间，这个值是指已经完成两次握手后向FastCGI 传送请求的超时时间
+    fastcgi_read_timeout: 1800                #接收FastCGI 应答的超时时间，这个值是指已经完成两次握手后接收FastCGI 应答的超时时间
+    fastcgi_buffer_size: 16k                  #指定读取FastCGI 应答第一部分需要用多大的缓冲区
+    fastcgi_buffers: '256 16k'                #指定本地需要用多少和多大的缓冲区来缓冲FastCGI 的应答
+    fastcgi_busy_buffers_size: 1024k          #
+    fastcgi_temp_file_write_size: 2048k       #写入fastcgi_temp_path 时将用多大的数据块
+    fastcgi_keep_conn: 'on'                   #
+  proxy:
+    enabled: True
+    proxy_connect_timeout: 300
+    proxy_read_timeout: 300
+    proxy_send_timeout: 300
+    proxy_buffer_size: 16k                    #缓冲区大小
+    proxy_buffers: '4 64k'
+    proxy_busy_buffers_size: 128k
+    proxy_temp_file_write_size: 128k
+  gzip:
+    enabled: True
+    gzip: 'on'                    #启用或禁用响应的gzip
+    gzip_http_version: '1.0'      #设置压缩响应所需的最小HTTP请求版本
+    gzip_vary: 'on'               #如果指令gzip， gzip_static或gunzip 处于活动状态， 则启用或禁用插入"Vary：Accept-Encoding"响应标头字段
+    gzip_comp_level: 2            #压缩等级, 1-9
+    gzip_types: 'text/plain application/x-javascript text/css application/xml' #压缩类型
+    gzip_buffers: '4 16k'         # 压缩的响应缓冲区
+    gzip_min_length: 1k           #压缩的响应的最小长度
+    gzip_disable: 'MSIE [1-6].(?!.*SV1)'  #禁用"User-Agent"标头字段与任何指定正则表达式匹配的请求响应的gzip
+
