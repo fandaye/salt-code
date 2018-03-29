@@ -1,0 +1,10 @@
+{% set config = pillar.get('php') -%}
+{{ config.get('logs_dir','/var/log/php-fpm')}}/*log {
+    missingok
+    notifempty
+    sharedscripts
+    delaycompress
+    postrotate
+        /bin/kill -SIGUSR1 `cat {{ config.get('php-fpm').get('pid_file','/var/run/php-fpm/php-fpm.pid')}} 2>/dev/null` 2>/dev/null || true
+    endscript
+}

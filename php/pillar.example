@@ -1,0 +1,74 @@
+php:
+  name: php
+  install:
+    enabled: True
+    version: 5.6
+    download_host: http://cdn.remirepo.net 
+    pkgs:
+      - php-fpm
+      - php-common
+      - php-cli  
+      - php-devel  
+      - php-pecl-memcache  
+      - php-pecl-memcached  
+      - php-gd  
+      - php-pear  
+      - php-mbstring  
+      - php-mysqlnd  
+      - php-xml  
+      - php-bcmath  
+      - php-pdo  
+      - php-mcrypt
+      - php-pecl-redis
+      - php-soap
+  dirs:
+    /data/logs/php-fpm:
+      options:
+        - makedirs: True
+        - mode: 777    
+  files:
+    /etc/php.ini:
+      options:
+        - source: salt://php/files/etc/php.ini.jinja
+        - user: root
+        - group: root
+        - mode: 0644
+        - template: jinja      
+    /etc/php-fpm.d/www.conf:
+      options:
+        - source: salt://php/files/etc/www.conf.jinja
+        - user: root
+        - group: root
+        - mode: 0644
+        - template: jinja
+    /etc/php-fpm.conf:
+      options:
+        - source: salt://php/files/etc/php-fpm.conf.jinja
+        - user: root
+        - group: root
+        - mode: 0644
+        - template: jinja
+    /etc/logrotate.d/php-fpm:
+      options:
+        - source: salt://php/files/etc/php-fpm.jinja
+        - mode: 0644
+        - template: jinja
+
+  logs_dir: /data/logs/php-fpm
+  
+  php-fpm:
+    pid_file: /var/run/php-fpm/php-fpm.pid
+    disable_functions : "exec,passthru,shell_exec,system,proc_open,show_source"
+    session:
+      save_handler: redis
+      save_path: tcp://127.0.0.1:6379
+    slowlog:
+      enabled: True
+      timeout: 5s
+
+  running:
+    enabled: True
+    options:
+      - name: php-fpm
+      - enable: True
+      - reload: True
