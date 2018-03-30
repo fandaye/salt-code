@@ -22,12 +22,12 @@ consul:
   master:                                                   #maste节点列表
     docker04:                                               #节点 grains['id']
       ip: 172.16.50.117                                     #IP地址
-    docker03-morepay-cn:
+    docker03:
       ip: 172.16.50.112
-    docker01-morepay-cn:
+    docker01:
       ip: 172.16.50.104
   agent:                                                    #agent节点列表
-    docker02-morepay-cn:
+    docker02:
       ip:  172.16.50.111
   files:
     /etc/consul/consul.json:
