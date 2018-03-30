@@ -1,0 +1,50 @@
+{% set consul = pillar.get('consul', {}) -%}
+{% set start_join_string = [] -%}
+{% set recursors_string = consul.get('config').get('recursors',["114.114.114.114"]) -%}
+{
+  "datacenter": "{{ consul.get('config').get('datacenter','dc1') }}",
+  "retry_interval":"{{ consul.get('config').get('retry_interval', '30s') }}",
+  "client_addr":"{{ consul.get('config').get('client_addr', '0.0.0.0') }}",
+  "recursors": {{'["'+recursors_string|join('","')+'"]'}},
+  "data_dir": "{{consul.get('config').get('data_dir', '/data/consul/data')}}",
+  "log_level": "{{ consul.get('config').get('log_level', 'err') }}",
+  "acl_agent_token": "{{ consul.get('config').get('acl_agent_token','deny') }}",
+  {% if consul.config.acl_enabled -%}
+  {% endif -%}
+  {% if consul.rejoin_after_leave -%}
+  "rejoin_after_leave": true,
+  {% endif -%}
+  {% for node_name , items in salt['pillar.get']('consul:master').items() -%}
+  {% if start_join_string.append(items.ip) -%}
+  {% endif -%}
+  {% if node_name == grains['id'] -%}
+  {% if consul.server -%}
+  "bootstrap_expect": {{consul.get('config').get('bootstrap_expect',2)}},
+  "server": true,
+  "node_name": "{{node_name}}",
+  "advertise_addr":"{{items.ip}}",
+  {% if consul.config.acl_enabled -%}
+  "acl_datacenter": "{{ consul.get('config').get('datacenter','dc1') }}",
+  "acl_master_token": "{{ consul.get('config').get('acl_master_token') }}",
+  "acl_default_policy": "{{ consul.get('config').get('acl_default_policy','deny') }}",
+   {% endif -%}
+  {% endif -%}
+  {% if consul.ui -%}
+  "ui": true,
+  {% endif -%}
+  {% endif -%}
+  {% endfor -%}
+  {% for node_name , items in salt['pillar.get']('consul:agent').items() -%}
+  {% if node_name == grains['id'] -%}
+  {% if consul.config.acl_enabled -%}
+  "acl_datacenter": "{{ consul.get('config').get('datacenter','dc1') }}",
+  {% endif -%}
+  "node_name": "{{node_name}}",
+  "start_join": {{'["'+start_join_string|join('","')+'"]'}},
+  "advertise_addr":"{{items.ip}}",
+  {% endif -%}
+  {% endfor -%}
+  "ports": {
+    "dns": 53
+  }
+}

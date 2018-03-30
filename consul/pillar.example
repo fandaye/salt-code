@@ -1,0 +1,56 @@
+consul:
+  name: consul
+  version: 1.0.3
+  download_host: releases.hashicorp.com
+  ui: True                                                  #是否启动ui
+  server: True                                              #是否启动server
+  rejoin_after_leave: True                                  #是否重启自动加入集群
+  bootstrap_expect: 2
+  config:
+    datacenter: "DC01"                                      #DC名称
+    acl_enabled: True                                       #是否启用ACL控制
+    acl_master_token: {{ acl_master_token }}
+    acl_agent_token: {{ acl_agent_token }}
+    acl_default_policy: 'deny'
+    data_dir: "/data/consul/data"                           #数据目录
+    log_level: "trace"                                      #日志级别
+    client_addr: '0.0.0.0'                                  #客户端地址,0.0.0.0表示所有
+    retry_interval: '5s'                                    #超时连接等待时间
+    recursors:                                              #上游DNS服务器的地址
+      - 114.114.114.114
+      - 115.115.115.115
+  master:                                                   #maste节点列表
+    docker04:                                               #节点 grains['id']
+      ip: 172.16.50.117                                     #IP地址
+    docker03-morepay-cn:
+      ip: 172.16.50.112
+    docker01-morepay-cn:
+      ip: 172.16.50.104
+  agent:                                                    #agent节点列表
+    docker02-morepay-cn:
+      ip:  172.16.50.111
+  files:
+    /etc/consul/consul.json:
+      options:
+        - source: 'salt://consul/files/etc/consul/consul.json.jinja'
+        - mode: 0644
+        - template: jinja      
+        - makedirs: True
+        - backup: minion
+    /usr/lib/systemd/system/consul.service:
+      options:
+        - source: salt://consul/files/usr/lib/systemd/system/consul.service
+        - mode: 0644
+        - makedirs: True
+        - backup: minion
+  dirs:
+    /data/consul/data:
+      options:
+        - makedirs: True
+        - mode: 755    
+  running:
+    enabled: True
+    options:
+      - name: consul
+      - enable: True
+      - reload: True    
