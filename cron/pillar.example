@@ -1,0 +1,13 @@
+#    - user: root      # 运行用户 ; default : root
+#    - minute: '*/5'   # 分 minute (0 - 59) ; default : *
+#    - hour: *         # 时 hour (0 - 23) ; default : *
+#    - daymonth: *     # 天 day of month (1 - 31); default : *
+#    - month: *        # 月 month (1 - 12); default : *
+#    - dayweek: *      # 周 day of week (0 - 6); default : *
+
+
+cron:
+  mysql_backup:
+    - user: root
+    - minute: '*/1'
+    - name: 'date > /tmp/crontest'
