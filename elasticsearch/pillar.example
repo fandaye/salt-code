@@ -1,0 +1,41 @@
+elasticsearch:
+  user: elasticsearch
+  source_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.3.rpm'
+  config:
+    files:
+      /etc/elasticsearch/elasticsearch.yml:
+        options:
+          - source: salt://elasticsearch/files/etc/elasticsearch/elasticsearch.yml
+          - user: root
+          - group: elasticsearch
+          - mode: 0660
+          - template: jinja      
+    dirs:
+      /data/elasticsearch/data:
+        options:
+          - makedirs: True
+          - mode: 755
+          - user: elasticsearch
+          - group: elasticsearch
+      /data/elasticsearch/log:
+        options:
+          - makedirs: True
+          - mode: 755
+          - user: elasticsearch
+          - group: elasticsearch
+    cluster: True
+    cluster_name: elasticsearch
+    cluster_nodes:
+      - 172.16.50.104
+      - 172.16.50.111
+      - 172.16.50.112
+    minnodes: 2
+    logdir: '/data/elasticsearch/log'
+    data_dir: '/data/elasticsearch/data'
+    port: 9200
+  running:
+    enabled: True
+    options:
+      - name: elasticsearch
+      - enable: True
+      - reload: True
