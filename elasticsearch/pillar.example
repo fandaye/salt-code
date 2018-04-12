@@ -1,5 +1,5 @@
 elasticsearch:
-  user: elasticsearch
+  name: elasticsearch
   source_url: 'https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.3.rpm'
   config:
     files:
