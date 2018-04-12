@@ -1,0 +1,42 @@
+redis:
+  name: redis
+  install:
+    enabled: True
+    version: 4.0.7    # 3.2.10 , 4.0.7
+
+  running:
+    enabled: True
+    options:
+      - name: redis
+      - enable: True
+      - reload: True
+
+  files:
+    /etc/redis.conf:
+      options:
+        - source: salt://redis/files/etc/redis.conf.jinja
+        - user: redis
+        - group: root
+        - mode: 0644
+        - template: jinja
+
+  dirs:
+    /data/redis:
+      options:
+        - makedirs: True
+        - user: redis
+        - group: redis
+        - mode: 755     
+
+  config:
+    bind: 0.0.0.0
+    port: 6379
+    passwd:
+      enable: False
+      requirepass: wfehbfjwhebfwebfkhwbfwejh
+    pidfile: /var/run/redis_6379.pid
+    loglevel: notice
+    logfile: /var/log/redis/redis.log
+    dir: /data/redis
+    maxmemory: 2G 
+    maxmemory-policy: volatile-lru
