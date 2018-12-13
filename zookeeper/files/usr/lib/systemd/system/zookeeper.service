@@ -1,0 +1,18 @@
+{% set prefix           = salt['pillar.get']('zookeeper:prefix', '/usr/lib') -%}
+{% set logdir           = salt['pillar.get']('zookeeper:config:logdir', '/var/log/zookeeper') -%}
+[Unit]
+Description=Apache Zookeeper
+After=network.target
+
+[Service]
+Environment="ZOO_LOG_DIR={{logdir}}"
+Type=forking
+User=zookeeper
+Group=zookeeper
+SyslogIdentifier=zookeeper
+ExecStart={{prefix}}/zookeeper/bin/zkServer.sh start
+ExecReload={{prefix}}/zookeeper/bin/zkServer.sh restart
+ExecStop={{prefix}}/zookeeper/bin/zkServer.sh stop
+
+[Install]
+WantedBy=multi-user.target

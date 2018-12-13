@@ -1,0 +1,23 @@
+zookeeper:
+  user: zookeeper
+  uid: 6030
+  prefix: /usr/lib
+  version: 3.4.10
+  source_url: 'http://apache.mirror.globo.tech/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz'
+  config:
+    logdir: '/var/log/zookeeper'
+    data_dir: '/data/zookeeper'
+    directory: '/etc/zookeeper/conf'
+    port: 2181
+  cluster:
+    enable: True
+    hosts:
+      node03: 1
+      node04: 2
+      node05: 3
+  running:
+    enabled: True
+    options:
+      - name: zookeeper
+      - enable: True
+      - reload: True

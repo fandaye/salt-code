@@ -1,0 +1,7 @@
+{% set ClusterConfig = salt['pillar.get']('zookeeper:cluster','') -%}
+{% for host , tiems in ClusterConfig.hosts.items() -%}
+{% if grains['id'] == host -%}
+{{ tiems -}}
+{% endif -%}
+{% endfor -%}
+
