@@ -1,0 +1,18 @@
+{% set etcdir           = salt['pillar.get']('kafka:config:directory', '/etc/kafka/conf/') -%}
+{% set prefix           = salt['pillar.get']('kafka:prefix', '/usr/lib') -%}
+{% set logdir           = salt['pillar.get']('kafka:config:logdir', '/var/log/kafka') -%}
+[Unit]
+Description=Apache Kafka
+After=network.target
+
+[Service]
+Environment="LOG_DIR={{logdir}}"
+Type=simple
+User=kafka
+Group=kafka
+SyslogIdentifier=kafka
+ExecStart={{prefix}}/kafka/bin/kafka-server-start.sh {{ etcdir }}server.properties
+ExecStop={{prefix}}/kafka/bin/kafka-server-stop.sh
+
+[Install]
+WantedBy=multi-user.target
