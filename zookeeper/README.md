@@ -7,7 +7,7 @@ Saltstack Version: 2018.3.3
 
 Pillar 变量说明：
 
-> 参考：[pillar.example]()
+> 参考：[pillar.example](https://github.com/fandaye/salt-code/blob/master/zookeeper/pillar.example)
 
 ```
 zookeeper:
