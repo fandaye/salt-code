@@ -1,0 +1,21 @@
+{%- set ipaddr = salt['pillar.get']('ipaddr') -%}
+{
+  "CN": "etcd",
+  "hosts": [
+    "127.0.0.1",
+    "{{ ipaddr }}"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "HangZhou",
+      "L": "XS",
+      "O": "k8s",
+      "OU": "System"
+    }
+  ]
+}
