@@ -3,7 +3,7 @@ Saltstack 自动化部署 Zookeeper 及卸载
 
 Saltstack Version: 2018.3.3
 
-测试环境：Centos 6/7
+测试环境：Centos 7.x
 
 Pillar 变量说明：
 
